@@ -5,24 +5,25 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/ms-henglu/pal/rawlog"
 	"github.com/ms-henglu/pal/types"
 	"github.com/ms-henglu/pal/utils"
 )
 
-var _ types.Provider = AzureRMProvider{}
+var _ Provider = AzureRMProvider{}
 
 type AzureRMProvider struct {
 }
 
-func (a AzureRMProvider) IsRequestTrace(l types.RawLog) bool {
+func (a AzureRMProvider) IsRequestTrace(l rawlog.RawLog) bool {
 	return l.Level == "DEBUG" && strings.Contains(l.Message, "provider.terraform-provider-azurerm: AzureRM Request:")
 }
 
-func (a AzureRMProvider) IsResponseTrace(l types.RawLog) bool {
+func (a AzureRMProvider) IsResponseTrace(l rawlog.RawLog) bool {
 	return l.Level == "DEBUG" && strings.Contains(l.Message, "provider.terraform-provider-azurerm: AzureRM Response for")
 }
 
-func (a AzureRMProvider) ParseRequest(l types.RawLog) (*types.RequestTrace, error) {
+func (a AzureRMProvider) ParseRequest(l rawlog.RawLog) (*types.RequestTrace, error) {
 	urlPath := ""
 	method := ""
 	headers := make(map[string]string)
@@ -41,7 +42,7 @@ func (a AzureRMProvider) ParseRequest(l types.RawLog) (*types.RequestTrace, erro
 			if err != nil {
 				return nil, err
 			}
-			utils.AppendHeader(headers, key, value)
+			headers[key] = value
 		default:
 			if parts := strings.Split(line, " "); len(parts) == 3 {
 				method = parts[0]
@@ -62,7 +63,7 @@ func (a AzureRMProvider) ParseRequest(l types.RawLog) (*types.RequestTrace, erro
 	}, nil
 }
 
-func (a AzureRMProvider) ParseResponse(l types.RawLog) (*types.RequestTrace, error) {
+func (a AzureRMProvider) ParseResponse(l rawlog.RawLog) (*types.RequestTrace, error) {
 	urlPath := ""
 	host := ""
 	method := "" // TODO: this is not available in the response
@@ -93,7 +94,7 @@ func (a AzureRMProvider) ParseResponse(l types.RawLog) (*types.RequestTrace, err
 			if err != nil {
 				return nil, err
 			}
-			utils.AppendHeader(headers, key, value)
+			headers[key] = value
 		default:
 			if matches := statusCodeRegex.FindAllStringSubmatch(line, -1); len(matches) > 0 && len(matches[0]) == 2 {
 				fmt.Sscanf(matches[0][1], "%d", &statusCode)

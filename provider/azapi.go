@@ -5,24 +5,25 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/ms-henglu/pal/rawlog"
 	"github.com/ms-henglu/pal/types"
 	"github.com/ms-henglu/pal/utils"
 )
 
-var _ types.Provider = AzAPIProvider{}
+var _ Provider = AzAPIProvider{}
 
 type AzAPIProvider struct {
 }
 
-func (a AzAPIProvider) IsRequestTrace(l types.RawLog) bool {
+func (a AzAPIProvider) IsRequestTrace(l rawlog.RawLog) bool {
 	return l.Level == "DEBUG" && strings.Contains(l.Message, "Request: ==> OUTGOING REQUEST")
 }
 
-func (a AzAPIProvider) IsResponseTrace(l types.RawLog) bool {
+func (a AzAPIProvider) IsResponseTrace(l rawlog.RawLog) bool {
 	return l.Level == "DEBUG" && strings.Contains(l.Message, "Response: ==> REQUEST/RESPONSE")
 }
 
-func (a AzAPIProvider) ParseRequest(l types.RawLog) (*types.RequestTrace, error) {
+func (a AzAPIProvider) ParseRequest(l rawlog.RawLog) (*types.RequestTrace, error) {
 	method := ""
 	host := ""
 	uriPath := ""
@@ -40,7 +41,7 @@ func (a AzAPIProvider) ParseRequest(l types.RawLog) (*types.RequestTrace, error)
 			if err != nil {
 				return nil, err
 			}
-			utils.AppendHeader(headers, key, value)
+			headers[key] = value
 		case utils.IsJson(line):
 			body = line
 		default:
@@ -67,18 +68,18 @@ func (a AzAPIProvider) ParseRequest(l types.RawLog) (*types.RequestTrace, error)
 	}, nil
 }
 
-func (a AzAPIProvider) ParseResponse(l types.RawLog) (*types.RequestTrace, error) {
+func (a AzAPIProvider) ParseResponse(l rawlog.RawLog) (*types.RequestTrace, error) {
 	method := ""
 	host := ""
 	uriPath := ""
 	body := ""
 	headers := make(map[string]string)
 
-	lines := strings.Split(l.Message, strings.Repeat("-", 80))
+	sections := strings.Split(l.Message, strings.Repeat("-", 80))
 	message := l.Message
-	if len(lines) == 4 {
-		body = lines[2]
-		message = lines[0] + lines[1]
+	if len(sections) == 4 {
+		body = sections[2]
+		message = utils.LineAt(sections[0], 1) + sections[1]
 	}
 
 	for _, line := range strings.Split(message, "\n") {
@@ -93,7 +94,7 @@ func (a AzAPIProvider) ParseResponse(l types.RawLog) (*types.RequestTrace, error
 			if err != nil {
 				return nil, err
 			}
-			utils.AppendHeader(headers, key, value)
+			headers[key] = value
 		case utils.IsJson(line):
 			body = line
 		default:
@@ -110,6 +111,7 @@ func (a AzAPIProvider) ParseResponse(l types.RawLog) (*types.RequestTrace, error
 
 	statusCode := 0
 	if v := headers["RESPONSE Status"]; v != "" {
+		delete(headers, "RESPONSE Status")
 		fmt.Sscanf(v, "%d", &statusCode)
 	}
 	return &types.RequestTrace{

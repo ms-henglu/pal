@@ -1,14 +1,6 @@
 package types
 
-import (
-	"time"
-)
-
-type RawLog struct {
-	TimeStamp time.Time
-	Level     string
-	Message   string
-}
+import "time"
 
 type RequestTrace struct {
 	Url        string
