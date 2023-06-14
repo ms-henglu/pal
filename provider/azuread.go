@@ -6,25 +6,26 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/ms-henglu/pal/rawlog"
 	"github.com/ms-henglu/pal/types"
 	"github.com/ms-henglu/pal/utils"
 )
 
-var _ types.Provider = AzureADProvider{}
+var _ Provider = AzureADProvider{}
 var statusCodeRegex = regexp.MustCompile(`HTTP/\d.\d\s(\d{3})\s.+`)
 
 type AzureADProvider struct {
 }
 
-func (a AzureADProvider) IsRequestTrace(l types.RawLog) bool {
+func (a AzureADProvider) IsRequestTrace(l rawlog.RawLog) bool {
 	return l.Level == "INFO" && strings.Contains(l.Message, "============================ Begin AzureAD Request")
 }
 
-func (a AzureADProvider) IsResponseTrace(l types.RawLog) bool {
+func (a AzureADProvider) IsResponseTrace(l rawlog.RawLog) bool {
 	return l.Level == "INFO" && strings.Contains(l.Message, "============================ Begin AzureAD Response")
 }
 
-func (a AzureADProvider) ParseRequest(l types.RawLog) (*types.RequestTrace, error) {
+func (a AzureADProvider) ParseRequest(l rawlog.RawLog) (*types.RequestTrace, error) {
 	urlLine := ""
 	headers := make(map[string]string)
 	method := ""
@@ -38,7 +39,7 @@ func (a AzureADProvider) ParseRequest(l types.RawLog) (*types.RequestTrace, erro
 			if err != nil {
 				return nil, err
 			}
-			utils.AppendHeader(headers, key, value)
+			headers[key] = value
 		default:
 			urlLine = line
 			if parts := strings.Split(urlLine, " "); len(parts) == 3 {
@@ -60,7 +61,7 @@ func (a AzureADProvider) ParseRequest(l types.RawLog) (*types.RequestTrace, erro
 	}, nil
 }
 
-func (a AzureADProvider) ParseResponse(l types.RawLog) (*types.RequestTrace, error) {
+func (a AzureADProvider) ParseResponse(l rawlog.RawLog) (*types.RequestTrace, error) {
 	headers := make(map[string]string)
 	statusCode := 0
 	method := ""
@@ -83,7 +84,7 @@ func (a AzureADProvider) ParseResponse(l types.RawLog) (*types.RequestTrace, err
 			if err != nil {
 				return nil, err
 			}
-			utils.AppendHeader(headers, key, value)
+			headers[key] = value
 		default:
 			parts := strings.Split(line, " ")
 			if len(parts) == 2 {

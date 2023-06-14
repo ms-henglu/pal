@@ -52,10 +52,10 @@ func ParseHeader(input string) (string, string, error) {
 	return key, value, nil
 }
 
-func AppendHeader(headers map[string]string, key, value string) {
-	if v, ok := headers[key]; ok {
-		headers[key] = fmt.Sprintf("%s, %s", v, value)
-	} else {
-		headers[key] = value
+func LineAt(input string, index int) string {
+	lines := strings.Split(input, "\n")
+	if len(lines) > index {
+		return lines[index]
 	}
+	return input
 }
