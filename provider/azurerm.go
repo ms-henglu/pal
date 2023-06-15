@@ -16,11 +16,11 @@ type AzureRMProvider struct {
 }
 
 func (a AzureRMProvider) IsRequestTrace(l rawlog.RawLog) bool {
-	return l.Level == "DEBUG" && strings.Contains(l.Message, "provider.terraform-provider-azurerm: AzureRM Request:")
+	return l.Level == "DEBUG" && strings.Contains(l.Message, "provider.terraform-provider-azurerm") && strings.Contains(l.Message, "AzureRM Request:")
 }
 
 func (a AzureRMProvider) IsResponseTrace(l rawlog.RawLog) bool {
-	return l.Level == "DEBUG" && strings.Contains(l.Message, "provider.terraform-provider-azurerm: AzureRM Response for")
+	return l.Level == "DEBUG" && strings.Contains(l.Message, "provider.terraform-provider-azurerm") && strings.Contains(l.Message, "AzureRM Response for")
 }
 
 func (a AzureRMProvider) ParseRequest(l rawlog.RawLog) (*types.RequestTrace, error) {
@@ -36,9 +36,18 @@ func (a AzureRMProvider) ParseRequest(l rawlog.RawLog) (*types.RequestTrace, err
 			index := strings.LastIndex(line, ": timestamp")
 			if utils.IsJson(line[0:index]) {
 				body = line[0:index]
+			} else {
+				lineTrimTimestamp := line[0:index]
+				key, value, err := utils.ParseHeader(lineTrimTimestamp)
+				if err == nil {
+					headers[key] = value
+				}
 			}
 		case strings.Contains(line, ": "):
 			key, value, err := utils.ParseHeader(line)
+			if strings.HasPrefix(key, "provider.terraform-provider-azurerm") {
+				continue
+			}
 			if err != nil {
 				return nil, err
 			}

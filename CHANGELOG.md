@@ -11,6 +11,7 @@ FEATURES:
 
 BUG FIXES:
 - Fix the issue that response headers may contain duplicated values.
+- Fix the issue that logs from released `azurerm` provider may not be parsed correctly.
 
 ## v0.1.0
 
