@@ -61,7 +61,7 @@ func (a AzureRMProvider) ParseRequest(l rawlog.RawLog) (*types.RequestTrace, err
 	}
 	return &types.RequestTrace{
 		TimeStamp: l.TimeStamp,
-		Url:       urlPath,
+		Url:       utils.NormalizeUrlPath(urlPath),
 		Method:    method,
 		Host:      headers["Host"],
 		Provider:  "azurerm",
@@ -80,10 +80,15 @@ func (a AzureRMProvider) ParseResponse(l rawlog.RawLog) (*types.RequestTrace, er
 	headers := make(map[string]string)
 	statusCode := 0
 
-	for _, line := range strings.Split(l.Message, "\n") {
+	lines := strings.Split(l.Message, "\n")
+	i := 0
+	foundBodySegment := false
+	for ; i < len(lines); i++ {
+		line := lines[i]
 		switch {
-		case line == "":
-			continue
+		case strings.TrimSpace(line) == "":
+			foundBodySegment = true
+			break
 		case strings.Contains(line, "AzureRM Response for "):
 			urlLine := line[strings.Index(line, "AzureRM Response for ")+len("AzureRM Response for "):]
 			urlLine = strings.Trim(urlLine, " \n\r:")
@@ -93,11 +98,6 @@ func (a AzureRMProvider) ParseResponse(l rawlog.RawLog) (*types.RequestTrace, er
 			}
 			host = parsedUrl.Host
 			urlPath = fmt.Sprintf("%s?%s", parsedUrl.Path, parsedUrl.RawQuery)
-		case strings.Contains(line, ": timestamp"):
-			index := strings.LastIndex(line, ": timestamp")
-			if utils.IsJson(line[0:index]) {
-				body = line[0:index]
-			}
 		case strings.Contains(line, ": "):
 			key, value, err := utils.ParseHeader(line)
 			if err != nil {
@@ -109,11 +109,24 @@ func (a AzureRMProvider) ParseResponse(l rawlog.RawLog) (*types.RequestTrace, er
 				fmt.Sscanf(matches[0][1], "%d", &statusCode)
 			}
 		}
+		if foundBodySegment {
+			break
+		}
+	}
+
+	if i+1 < len(lines) {
+		line := strings.Join(lines[i+1:], "\n")
+		if strings.Contains(line, ": timestamp") {
+			index := strings.LastIndex(line, ": timestamp")
+			if utils.IsJson(line[0:index]) {
+				body = line[0:index]
+			}
+		}
 	}
 
 	return &types.RequestTrace{
 		TimeStamp:  l.TimeStamp,
-		Url:        urlPath,
+		Url:        utils.NormalizeUrlPath(urlPath),
 		Host:       host,
 		Method:     method,
 		StatusCode: statusCode,

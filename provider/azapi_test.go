@@ -1,7 +1,8 @@
 package provider_test
 
 import (
-	"strings"
+	"encoding/json"
+	"reflect"
 	"testing"
 
 	"github.com/ms-henglu/pal/provider"
@@ -206,8 +207,25 @@ func TestAzAPIProvider_ParseRequest(t *testing.T) {
 						t.Errorf("ParseRequest() request header %v = %v, want %v", k, v, tc.want.Request.Headers[k])
 					}
 				}
-				if got.Request.Body != tc.want.Request.Body {
-					t.Errorf("ParseRequest() request body = %v, want %v", got.Request.Body, tc.want.Request.Body)
+				if len(tc.want.Request.Body) == 0 {
+					if len(got.Request.Body) != 0 {
+						t.Errorf("ParseRequest() request body = %v, want %v", got.Request.Body, tc.want.Request.Body)
+					}
+					return
+				}
+
+				var gotBody, wantBody interface{}
+				err = json.Unmarshal([]byte(got.Request.Body), &gotBody)
+				if err != nil {
+					t.Errorf("ParseRequest() request body unmarshal error = %v", err)
+				}
+				err = json.Unmarshal([]byte(tc.want.Request.Body), &wantBody)
+				if err != nil {
+					t.Errorf("ParseRequest() request body unmarshal error = %v", err)
+				}
+
+				if !reflect.DeepEqual(gotBody, wantBody) {
+					t.Errorf("ParseRequest() request body = %v, want %v", gotBody, wantBody)
 				}
 			}
 
@@ -361,8 +379,18 @@ func TestAzAPIProvider_ParseResponse(t *testing.T) {
 						t.Errorf("ParseResponse() response header %v = %v, want %v", k, v, tc.want.Response.Headers[k])
 					}
 				}
-				if strings.Trim(got.Response.Body, " \n") != tc.want.Response.Body {
-					t.Errorf("ParseResponse() response body = %v, want %v", got.Response.Body, tc.want.Response.Body)
+				var gotBody, wantBody interface{}
+				err = json.Unmarshal([]byte(got.Response.Body), &gotBody)
+				if err != nil {
+					t.Errorf("ParseResponse() response body unmarshal error = %v", err)
+				}
+				err = json.Unmarshal([]byte(tc.want.Response.Body), &wantBody)
+				if err != nil {
+					t.Errorf("ParseResponse() response body unmarshal error = %v", err)
+				}
+
+				if !reflect.DeepEqual(gotBody, wantBody) {
+					t.Errorf("ParseResponse() response body = %v, want %v", gotBody, wantBody)
 				}
 			}
 
