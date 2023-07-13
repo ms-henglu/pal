@@ -88,7 +88,6 @@ func (a AzureRMProvider) ParseResponse(l rawlog.RawLog) (*types.RequestTrace, er
 		switch {
 		case strings.TrimSpace(line) == "":
 			foundBodySegment = true
-			break
 		case strings.Contains(line, "AzureRM Response for "):
 			urlLine := line[strings.Index(line, "AzureRM Response for ")+len("AzureRM Response for "):]
 			urlLine = strings.Trim(urlLine, " \n\r:")
