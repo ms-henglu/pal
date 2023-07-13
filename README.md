@@ -18,6 +18,10 @@ It can output different formats of the request traces, including:
 
   It can output the request traces in OAV traffic format, which can be used to validate the request traces with [OAV](https://github.com/Azure/oav).
 
+- AzAPI config:
+
+    It can output the request traces in AzAPI config format, which can be used to reproduce the deployed resources with [AzAPI](https://registry.terraform.io/providers/Azure/azapi/latest).
+
 ## Usage
 
 ```bash
@@ -33,7 +37,7 @@ Usage of pal:
   -i string
         Input terraform log file
   -m markdown
-        Output format, allowed values are markdown and `oav` (default "markdown")
+        Output format, allowed values are markdown, `oav` and `azapi` (default "markdown")
   -o string
         Output directory
   -version

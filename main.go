@@ -24,7 +24,7 @@ func main() {
 
 	flag.StringVar(&input, "i", "", "Input terraform log file")
 	flag.StringVar(&output, "o", "", "Output directory")
-	flag.StringVar(&mode, "m", "markdown", "Output format, allowed values are `markdown` and `oav`")
+	flag.StringVar(&mode, "m", "markdown", "Output format, allowed values are `markdown`, `oav` and `azapi`")
 
 	// backward compatibility, the first argument is the input file
 	if len(os.Args) == 2 {
