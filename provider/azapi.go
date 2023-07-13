@@ -59,7 +59,7 @@ func (a AzAPIProvider) ParseRequest(l rawlog.RawLog) (*types.RequestTrace, error
 		TimeStamp: l.TimeStamp,
 		Method:    method,
 		Host:      host,
-		Url:       uriPath,
+		Url:       utils.NormalizeUrlPath(uriPath),
 		Provider:  "azapi",
 		Request: &types.HttpRequest{
 			Headers: headers,
@@ -118,7 +118,7 @@ func (a AzAPIProvider) ParseResponse(l rawlog.RawLog) (*types.RequestTrace, erro
 		TimeStamp:  l.TimeStamp,
 		Method:     method,
 		Host:       host,
-		Url:        uriPath,
+		Url:        utils.NormalizeUrlPath(uriPath),
 		StatusCode: statusCode,
 		Provider:   "azapi",
 		Response: &types.HttpResponse{

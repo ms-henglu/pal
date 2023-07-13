@@ -51,7 +51,7 @@ func (a AzureADProvider) ParseRequest(l rawlog.RawLog) (*types.RequestTrace, err
 
 	return &types.RequestTrace{
 		TimeStamp: l.TimeStamp,
-		Url:       url,
+		Url:       utils.NormalizeUrlPath(url),
 		Method:    method,
 		Host:      headers["Host"],
 		Provider:  "azuread",
@@ -100,7 +100,7 @@ func (a AzureADProvider) ParseResponse(l rawlog.RawLog) (*types.RequestTrace, er
 
 	return &types.RequestTrace{
 		TimeStamp:  l.TimeStamp,
-		Url:        rawUrl,
+		Url:        utils.NormalizeUrlPath(rawUrl),
 		Method:     method,
 		Host:       host,
 		StatusCode: statusCode,

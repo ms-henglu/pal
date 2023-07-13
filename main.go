@@ -8,10 +8,11 @@ import (
 	"path"
 
 	"github.com/ms-henglu/pal/formatter"
+	"github.com/ms-henglu/pal/formatter/azapi"
 	"github.com/ms-henglu/pal/trace"
 )
 
-const version = "0.2.0"
+const version = "0.3.0"
 
 var showHelp = flag.Bool("help", false, "Show help")
 var showVersion = flag.Bool("version", false, "Show version")
@@ -75,7 +76,37 @@ func main() {
 			log.Printf("[INFO] output file: %s", outputPath)
 		}
 	case "markdown":
-		content := `<!--
+		content := markdownPrefix
+		format := formatter.MarkdownFormatter{}
+		for _, t := range traces {
+			content += format.Format(t)
+		}
+		outputPath := path.Clean(path.Join(output, "output.md"))
+		if err := os.WriteFile(outputPath, []byte(content), 0644); err != nil {
+			log.Fatalf("[ERROR] failed to write file: %v", err)
+		}
+		log.Printf("[INFO] output file: %s", outputPath)
+	case "azapi":
+		content := azapiPrefix
+		format := azapi.AzapiFormatter{}
+		for _, t := range traces {
+			if res := format.Format(t); res != "" {
+				content += res
+				content += "\n"
+			}
+		}
+		outputPath := path.Clean(path.Join(output, "pal-main.tf"))
+		if err := os.WriteFile(outputPath, []byte(content), 0644); err != nil {
+			log.Fatalf("[ERROR] failed to write file: %v", err)
+		}
+		log.Printf("[INFO] output file: %s", outputPath)
+	default:
+		log.Fatalf("[ERROR] unsupported output format: %s", mode)
+	}
+
+}
+
+const markdownPrefix = `<!--
 Tips:
 
 1. Use Markdown preview mode to get a better reading experience.
@@ -84,14 +115,18 @@ Tips:
 -->
 
 `
-		format := formatter.MarkdownFormatter{}
-		for _, t := range traces {
-			content += format.Format(t)
-		}
-		if err := os.WriteFile(path.Join(output, "output.md"), []byte(content), 0644); err != nil {
-			log.Fatalf("[ERROR] failed to write file: %v", err)
-		}
-		log.Printf("[INFO] output file: %s", path.Clean(path.Join(output, "output.md")))
-	}
 
+const azapiPrefix = `
+terraform {
+  required_providers {
+    azapi = {
+      source = "Azure/azapi"
+    }
+  }
 }
+
+provider "azapi" {
+  skip_provider_registration = false
+}
+
+`

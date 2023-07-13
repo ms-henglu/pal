@@ -1,7 +1,8 @@
 package provider_test
 
 import (
-	"strings"
+	"encoding/json"
+	"reflect"
 	"testing"
 
 	"github.com/ms-henglu/pal/provider"
@@ -214,8 +215,26 @@ Accept-Encoding: gzip
 						t.Errorf("ParseRequest() request header %v = %v, want %v", k, v, tc.want.Request.Headers[k])
 					}
 				}
-				if got.Request.Body != tc.want.Request.Body {
-					t.Errorf("ParseRequest() request body = %v, want %v", got.Request.Body, tc.want.Request.Body)
+
+				if len(tc.want.Request.Body) == 0 {
+					if len(got.Request.Body) != 0 {
+						t.Errorf("ParseRequest() request body = %v, want %v", got.Request.Body, tc.want.Request.Body)
+					}
+					return
+				}
+
+				var gotBody, wantBody interface{}
+				err = json.Unmarshal([]byte(got.Request.Body), &gotBody)
+				if err != nil {
+					t.Errorf("ParseRequest() request body unmarshal error = %v", err)
+				}
+				err = json.Unmarshal([]byte(tc.want.Request.Body), &wantBody)
+				if err != nil {
+					t.Errorf("ParseRequest() request body unmarshal error = %v", err)
+				}
+
+				if !reflect.DeepEqual(gotBody, wantBody) {
+					t.Errorf("ParseRequest() request body = %v, want %v", gotBody, wantBody)
 				}
 			}
 
@@ -229,6 +248,120 @@ func TestAzureRMProvider_ParseResponse(t *testing.T) {
 		log  string
 		want types.RequestTrace
 	}{
+		{
+			name: "azurerm PUT response trace",
+			log: `2023-07-11T16:24:16.674+0800 [DEBUG] provider.terraform-provider-azurerm: AzureRM Response for https://management.azure.com/subscriptions/85b3dbca-5974-4067-9669-67a141095a76/resourceGroups/henglu6421/providers/Microsoft.Insights/components/henglu9128?api-version=2020-02-02: 
+HTTP/2.0 200 OK
+Access-Control-Expose-Headers: Request-Context
+Cache-Control: no-cache
+Content-Type: application/json; charset=utf-8
+Date: Tue, 11 Jul 2023 08:24:16 GMT
+Expires: -1
+Pragma: no-cache
+Request-Context: appId=cid-v1:60b64f55-e716-48c8-8b96-83eb9c6a7a9b
+Server: Microsoft-IIS/10.0
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Vary: Accept-Encoding
+X-Content-Type-Options: nosniff
+X-Ms-Correlation-Request-Id: 14e77fe7-e1a1-b8a1-65d5-40363cac85f5
+X-Ms-Ratelimit-Remaining-Subscription-Writes: 1199
+X-Ms-Request-Id: aa9250b0-9955-4821-ad66-ff354a68d834
+X-Ms-Routing-Request-Id: SOUTHEASTASIA:20230711T082416Z:aa9250b0-9955-4821-ad66-ff354a68d834
+X-Powered-By: ASP.NET
+
+{
+  "id": "/subscriptions/85b3dbca-5974-4067-9669-67a141095a76/resourceGroups/henglu6421/providers/microsoft.insights/components/henglu9128",
+  "name": "henglu9128",
+  "type": "microsoft.insights/components",
+  "location": "westeurope",
+  "tags": {},
+  "kind": "web",
+  "etag": "\"920312e9-0000-0200-0000-64ad11ae0000\"",
+  "properties": {
+    "ApplicationId": "henglu9128",
+    "AppId": "76d8a56f-5069-42ea-bae2-645248170408",
+    "Application_Type": "web",
+    "Flow_Type": null,
+    "Request_Source": null,
+    "InstrumentationKey": "2d727e28-a681-48af-95aa-677daba464d6",
+    "ConnectionString": "InstrumentationKey=2d727e28-a681-48af-95aa-677daba464d6;IngestionEndpoint=https://westeurope-4.in.applicationinsights.azure.com/;LiveEndpoint=https://westeurope.livediagnostics.monitor.azure.com/",
+    "Name": "henglu9128",
+    "CreationDate": "2023-07-11T08:24:14.7161403+00:00",
+    "TenantId": "85b3dbca-5974-4067-9669-67a141095a76",
+    "provisioningState": "Succeeded",
+    "SamplingPercentage": 100.0,
+    "RetentionInDays": 90,
+    "Retention": "P90D",
+    "DisableIpMasking": false,
+    "IngestionMode": "ApplicationInsights",
+    "publicNetworkAccessForIngestion": "Enabled",
+    "publicNetworkAccessForQuery": "Enabled",
+    "DisableLocalAuth": false,
+    "ForceCustomerStorageForProfiler": false,
+    "Ver": "v2"
+  }
+}: timestamp=2023-07-11T16:24:16.674+0800`,
+			want: types.RequestTrace{
+				Provider:   "azurerm",
+				Method:     "",
+				StatusCode: 200,
+				Host:       "management.azure.com",
+				Url:        "/subscriptions/85b3dbca-5974-4067-9669-67a141095a76/resourceGroups/henglu6421/providers/Microsoft.Insights/components/henglu9128?api-version=2020-02-02",
+				Response: &types.HttpResponse{
+					Headers: map[string]string{
+						"Access-Control-Expose-Headers": "Request-Context",
+						"Cache-Control":                 "no-cache",
+						"Content-Type":                  "application/json; charset=utf-8",
+						"Date":                          "Tue, 11 Jul 2023 08:24:16 GMT",
+						"Expires":                       "-1",
+						"Pragma":                        "no-cache",
+						"Request-Context":               "appId=cid-v1:60b64f55-e716-48c8-8b96-83eb9c6a7a9b",
+						"Server":                        "Microsoft-IIS/10.0",
+						"Strict-Transport-Security":     "max-age=31536000; includeSubDomains",
+						"Vary":                          "Accept-Encoding",
+						"X-Content-Type-Options":        "nosniff",
+						"X-Ms-Correlation-Request-Id":   "14e77fe7-e1a1-b8a1-65d5-40363cac85f5",
+						"X-Ms-Ratelimit-Remaining-Subscription-Writes": "1199",
+						"X-Ms-Request-Id":         "aa9250b0-9955-4821-ad66-ff354a68d834",
+						"X-Ms-Routing-Request-Id": "SOUTHEASTASIA:20230711T082416Z:aa9250b0-9955-4821-ad66-ff354a68d834",
+						"X-Powered-By":            "ASP.NET",
+					},
+					Body: `
+{
+  "id": "/subscriptions/85b3dbca-5974-4067-9669-67a141095a76/resourceGroups/henglu6421/providers/microsoft.insights/components/henglu9128",
+  "name": "henglu9128",
+  "type": "microsoft.insights/components",
+  "location": "westeurope",
+  "tags": {},
+  "kind": "web",
+  "etag": "\"920312e9-0000-0200-0000-64ad11ae0000\"",
+  "properties": {
+    "ApplicationId": "henglu9128",
+    "AppId": "76d8a56f-5069-42ea-bae2-645248170408",
+    "Application_Type": "web",
+    "Flow_Type": null,
+    "Request_Source": null,
+    "InstrumentationKey": "2d727e28-a681-48af-95aa-677daba464d6",
+    "ConnectionString": "InstrumentationKey=2d727e28-a681-48af-95aa-677daba464d6;IngestionEndpoint=https://westeurope-4.in.applicationinsights.azure.com/;LiveEndpoint=https://westeurope.livediagnostics.monitor.azure.com/",
+    "Name": "henglu9128",
+    "CreationDate": "2023-07-11T08:24:14.7161403+00:00",
+    "TenantId": "85b3dbca-5974-4067-9669-67a141095a76",
+    "provisioningState": "Succeeded",
+    "SamplingPercentage": 100.0,
+    "RetentionInDays": 90,
+    "Retention": "P90D",
+    "DisableIpMasking": false,
+    "IngestionMode": "ApplicationInsights",
+    "publicNetworkAccessForIngestion": "Enabled",
+    "publicNetworkAccessForQuery": "Enabled",
+    "DisableLocalAuth": false,
+    "ForceCustomerStorageForProfiler": false,
+    "Ver": "v2"
+  }
+}`,
+				},
+			},
+		},
 		{
 			name: "azurerm GET response trace",
 			log: `2023-06-15T15:10:42.112+0800 [DEBUG] provider.terraform-provider-azurerm_v3.61.0_x5: AzureRM Response for https://management.azure.com/subscriptions/85b3dbca-5974-4067-9669-67a141095a76/resourcegroups/henglu615aa?api-version=2020-06-01: 
@@ -348,8 +481,19 @@ X-Ms-Routing-Request-Id: SOUTHEASTASIA:20230615T071241Z:99b0be99-5635-4044-9961-
 						t.Errorf("ParseResponse() response header %v = %v, want %v", k, v, tc.want.Response.Headers[k])
 					}
 				}
-				if strings.Trim(got.Response.Body, " \n") != tc.want.Response.Body {
-					t.Errorf("ParseResponse() response body = %v, want %v", got.Response.Body, tc.want.Response.Body)
+
+				var gotBody, wantBody interface{}
+				err = json.Unmarshal([]byte(got.Response.Body), &gotBody)
+				if err != nil {
+					t.Errorf("ParseResponse() response body unmarshal error = %v", err)
+				}
+				err = json.Unmarshal([]byte(tc.want.Response.Body), &wantBody)
+				if err != nil {
+					t.Errorf("ParseResponse() response body unmarshal error = %v", err)
+				}
+
+				if !reflect.DeepEqual(gotBody, wantBody) {
+					t.Errorf("ParseResponse() response body = %v, want %v", gotBody, wantBody)
 				}
 			}
 

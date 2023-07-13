@@ -59,3 +59,11 @@ func LineAt(input string, index int) string {
 	}
 	return input
 }
+
+func NormalizeUrlPath(input string) string {
+	if !strings.HasPrefix(input, "/") {
+		input = "/" + input
+	}
+	input = strings.ReplaceAll(input, "//", "/")
+	return input
+}

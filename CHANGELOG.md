@@ -1,3 +1,11 @@
+## v0.3.0
+
+FEATURES:
+- Support parsing terraform logs to `azapi` traffic format.
+
+BUG FIXES:
+- Fix the issue that the parsed URL paths are not normalized.
+- Fix the issue that the request body from azurerm provider may not be parsed correctly, when the request body is pretty printed JSON.
 
 ## v0.2.0
 
