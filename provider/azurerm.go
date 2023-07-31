@@ -16,11 +16,11 @@ type AzureRMProvider struct {
 }
 
 func (a AzureRMProvider) IsRequestTrace(l rawlog.RawLog) bool {
-	return l.Level == "DEBUG" && strings.Contains(l.Message, "provider.terraform-provider-azurerm") && strings.Contains(l.Message, "AzureRM Request:")
+	return l.Level == "DEBUG" && strings.Contains(l.Message, "AzureRM Request:")
 }
 
 func (a AzureRMProvider) IsResponseTrace(l rawlog.RawLog) bool {
-	return l.Level == "DEBUG" && strings.Contains(l.Message, "provider.terraform-provider-azurerm") && strings.Contains(l.Message, "AzureRM Response for")
+	return l.Level == "DEBUG" && strings.Contains(l.Message, "AzureRM Response for")
 }
 
 func (a AzureRMProvider) ParseRequest(l rawlog.RawLog) (*types.RequestTrace, error) {
@@ -28,24 +28,21 @@ func (a AzureRMProvider) ParseRequest(l rawlog.RawLog) (*types.RequestTrace, err
 	method := ""
 	headers := make(map[string]string)
 	body := ""
-	for _, line := range strings.Split(l.Message, "\n") {
+
+	lines := strings.Split(l.Message, "\n")
+	i := 0
+	foundBodySegment := false
+	for ; i < len(lines); i++ {
+		line := lines[i]
 		switch {
-		case line == "":
-			continue
-		case strings.Contains(line, ": timestamp"):
-			index := strings.LastIndex(line, ": timestamp")
-			if utils.IsJson(line[0:index]) {
-				body = line[0:index]
-			} else {
-				lineTrimTimestamp := line[0:index]
-				key, value, err := utils.ParseHeader(lineTrimTimestamp)
-				if err == nil {
-					headers[key] = value
-				}
-			}
+		case strings.TrimSpace(line) == "":
+			foundBodySegment = true
 		case strings.Contains(line, ": "):
 			key, value, err := utils.ParseHeader(line)
 			if strings.HasPrefix(key, "provider.terraform-provider-azurerm") {
+				continue
+			}
+			if key == "AzureRM Request" {
 				continue
 			}
 			if err != nil {
@@ -57,6 +54,27 @@ func (a AzureRMProvider) ParseRequest(l rawlog.RawLog) (*types.RequestTrace, err
 				method = parts[0]
 				urlPath = parts[1]
 			}
+		}
+		if foundBodySegment {
+			break
+		}
+	}
+
+	if i+1 < len(lines) {
+		line := strings.Join(lines[i+1:], "\n")
+		if strings.Contains(line, ": timestamp") {
+			index := strings.LastIndex(line, ": timestamp")
+			if utils.IsJson(line[0:index]) {
+				body = line[0:index]
+			} else {
+				lineTrimTimestamp := line[0:index]
+				key, value, err := utils.ParseHeader(lineTrimTimestamp)
+				if err == nil {
+					headers[key] = value
+				}
+			}
+		} else {
+			body = line
 		}
 	}
 	return &types.RequestTrace{
@@ -120,6 +138,8 @@ func (a AzureRMProvider) ParseResponse(l rawlog.RawLog) (*types.RequestTrace, er
 			if utils.IsJson(line[0:index]) {
 				body = line[0:index]
 			}
+		} else {
+			body = line
 		}
 	}
 
