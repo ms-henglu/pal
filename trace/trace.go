@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 
 	"github.com/ms-henglu/pal/provider"
 	"github.com/ms-henglu/pal/rawlog"
@@ -23,7 +24,7 @@ func RequestTracesFromFile(input string) ([]types.RequestTrace, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to read input file: %v", err)
 	}
-	logRegex := regexp.MustCompile(`[\d+.:T\-]{28}\s\[[A-Z]+]`)
+	logRegex := regexp.MustCompile(`([\d+.:T\-/ ]{19,28})\s\[([A-Z]+)]`)
 	lines := utils.SplitBefore(string(data), logRegex)
 	log.Printf("[INFO] total lines: %d", len(lines))
 
@@ -75,13 +76,65 @@ func RequestTracesFromFile(input string) ([]types.RequestTrace, error) {
 				break
 			}
 			if !found {
-				log.Printf("[WARN] failed to find response for request: %v", traces[i])
+				log.Printf("[WARN] failed to find response for request: url %s, method %s", traces[i].Url, traces[i].Method)
 				mergedTraces = append(mergedTraces, traces[i])
 			}
 		}
 	}
 	log.Printf("[INFO] merged traces: %d", len(mergedTraces))
 	return mergedTraces, nil
+}
+
+func VerifyRequestTrace(t types.RequestTrace) []string {
+	out := make([]string, 0)
+	if len(t.Url) == 0 {
+		out = append(out, "[ERROR] url is empty")
+	}
+	if len(t.Host) == 0 {
+		out = append(out, "[ERROR] host is empty")
+	}
+	if len(t.Method) == 0 {
+		out = append(out, "[ERROR] method is empty")
+	}
+	if t.StatusCode == 0 {
+		out = append(out, "[ERROR] status code is empty")
+	}
+	if t.TimeStamp.IsZero() {
+		out = append(out, "[ERROR] timestamp is empty")
+	}
+	switch {
+	case t.Request == nil:
+		out = append(out, "[ERROR] request is nil")
+	case t.Request.Headers == nil:
+		out = append(out, "[ERROR] request headers is nil")
+	default:
+		if contentLength, ok := t.Request.Headers["Content-Length"]; ok {
+			length, err := strconv.ParseInt(contentLength, 10, 64)
+			if err != nil {
+				out = append(out, fmt.Sprintf("[ERROR] failed to parse content length: %v", err))
+			}
+			if length != 0 && len(t.Request.Body) == 0 {
+				out = append(out, "[ERROR] request body is empty")
+			}
+		}
+	}
+	switch {
+	case t.Response == nil:
+		out = append(out, "[ERROR] response is nil")
+	case t.Response.Headers == nil:
+		out = append(out, "[ERROR] response headers is nil")
+	default:
+		if contentLength, ok := t.Response.Headers["Content-Length"]; ok {
+			length, err := strconv.ParseInt(contentLength, 10, 64)
+			if err != nil {
+				out = append(out, fmt.Sprintf("[ERROR] failed to parse content length: %v", err))
+			}
+			if length != 0 && len(t.Response.Body) == 0 {
+				out = append(out, "[ERROR] response body is empty")
+			}
+		}
+	}
+	return out
 }
 
 func NewRequestTrace(l rawlog.RawLog) (*types.RequestTrace, error) {

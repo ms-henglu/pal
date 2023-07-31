@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/ms-henglu/pal/formatter"
 	"github.com/ms-henglu/pal/formatter/azapi"
@@ -60,6 +61,13 @@ func main() {
 	traces, err := trace.RequestTracesFromFile(input)
 	if err != nil {
 		log.Fatalf("[ERROR] failed to parse request traces: %v", err)
+	}
+
+	for _, t := range traces {
+		out := trace.VerifyRequestTrace(t)
+		if len(out) > 0 {
+			log.Printf("[WARN] verification failed: url %s\n%s", t.Url, strings.Join(out, "\n"))
+		}
 	}
 
 	switch mode {
