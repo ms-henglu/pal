@@ -32,26 +32,35 @@ type LiveResponse struct {
 
 func (o OavTrafficFormatter) Format(r types.RequestTrace) string {
 	var requestBody interface{}
-	err := json.Unmarshal([]byte(r.Request.Body), &requestBody)
-	if err != nil {
-		requestBody = nil
+	requestHeaders := make(map[string]string)
+	if r.Request != nil {
+		err := json.Unmarshal([]byte(r.Request.Body), &requestBody)
+		if err != nil {
+			requestBody = nil
+		}
+		requestHeaders = r.Request.Headers
 	}
+
 	var responseBody interface{}
-	err = json.Unmarshal([]byte(r.Response.Body), &responseBody)
-	if err != nil {
-		responseBody = nil
+	responseHeaders := make(map[string]string)
+	if r.Response != nil {
+		err := json.Unmarshal([]byte(r.Response.Body), &responseBody)
+		if err != nil {
+			responseBody = nil
+		}
+		responseHeaders = r.Response.Headers
 	}
 
 	out := OavTraffic{
 		LiveRequest: LiveRequest{
-			Headers: r.Request.Headers,
+			Headers: requestHeaders,
 			Method:  r.Method,
 			Url:     r.Url,
 			Body:    requestBody,
 		},
 		LiveResponse: LiveResponse{
 			StatusCode: fmt.Sprintf("%d", r.StatusCode),
-			Headers:    r.Response.Headers,
+			Headers:    responseHeaders,
 			Body:       responseBody,
 		},
 	}
