@@ -19,6 +19,8 @@ var providers = []provider.Provider{
 	provider.AzAPIProvider{},
 }
 
+var providerUrlRegex = regexp.MustCompile(`/subscriptions/[a-zA-Z\d\-]+/providers`)
+
 func RequestTracesFromFile(input string) ([]types.RequestTrace, error) {
 	data, err := os.ReadFile(input)
 	if err != nil {
@@ -57,6 +59,16 @@ func RequestTracesFromFile(input string) ([]types.RequestTrace, error) {
 
 	mergedTraces := make([]types.RequestTrace, 0)
 	for i := 0; i < len(traces); i++ {
+		// skip GET /subscriptions/******/providers
+		if traces[i].Method == "GET" && providerUrlRegex.MatchString(traces[i].Url) {
+			continue
+		}
+
+		if traces[i].Request != nil && traces[i].Response != nil {
+			mergedTraces = append(mergedTraces, traces[i])
+			continue
+		}
+
 		if traces[i].Request != nil {
 			found := false
 			for j := i + 1; j < len(traces); j++ {
@@ -139,6 +151,9 @@ func VerifyRequestTrace(t types.RequestTrace) []string {
 
 func NewRequestTrace(l rawlog.RawLog) (*types.RequestTrace, error) {
 	for _, p := range providers {
+		if p.IsTrafficTrace(l) {
+			return p.ParseTraffic(l)
+		}
 		if p.IsRequestTrace(l) {
 			return p.ParseRequest(l)
 		}

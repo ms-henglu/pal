@@ -15,6 +15,14 @@ var _ Provider = AzureRMProvider{}
 type AzureRMProvider struct {
 }
 
+func (a AzureRMProvider) IsTrafficTrace(l rawlog.RawLog) bool {
+	return false
+}
+
+func (a AzureRMProvider) ParseTraffic(l rawlog.RawLog) (*types.RequestTrace, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
 func (a AzureRMProvider) IsRequestTrace(l rawlog.RawLog) bool {
 	return l.Level == "DEBUG" && strings.Contains(l.Message, "AzureRM Request:")
 }

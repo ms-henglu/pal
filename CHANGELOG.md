@@ -1,7 +1,18 @@
+## v0.4.0
+BREAKING CHANGES:
+- Only support logs from terraform-provider-azapi v1.10.0 or above.
+
+ENHANCEMENTS:
+- The redundant query parameters are removed in the `markdown` format.
+- Remove the `/providers` API from parsed logs, because its response couldn't be parsed.
+
+BUG FIXES:
+- Fix the issue that some resources may not be outputted to `azapi` format.
+
 ## v0.3.0
 
 FEATURES:
-- Support parsing terraform logs to `azapi` traffic format.
+- Support parsing terraform logs to `azapi` format.
 
 BUG FIXES:
 - Fix the issue that the parsed URL paths are not normalized.
