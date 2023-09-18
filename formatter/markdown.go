@@ -3,6 +3,7 @@ package formatter
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/ms-henglu/pal/types"
@@ -19,7 +20,15 @@ func (m MarkdownFormatter) Format(r types.RequestTrace) string {
 	content = strings.ReplaceAll(content, "{Time}", r.TimeStamp.Format("15:04:05"))
 	content = strings.ReplaceAll(content, "{Method}", r.Method)
 	content = strings.ReplaceAll(content, "{Host}", r.Host)
-	content = strings.ReplaceAll(content, "{Url}", r.Url)
+	urlStr := r.Url
+	parsedUrl, err := url.Parse(r.Url)
+	if err == nil {
+		urlStr = parsedUrl.Path
+		if value := parsedUrl.Query()["api-version"]; len(value) > 0 {
+			urlStr += "?api-version=" + value[0]
+		}
+	}
+	content = strings.ReplaceAll(content, "{Url}", urlStr)
 	content = strings.ReplaceAll(content, "{StatusCode}", fmt.Sprintf("%d", r.StatusCode))
 	content = strings.ReplaceAll(content, "{StatusMessage}", http.StatusText(r.StatusCode))
 	content = strings.ReplaceAll(content, "{RequestHeaders}", m.formatHeaders(r.Request.Headers))

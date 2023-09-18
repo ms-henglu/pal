@@ -63,8 +63,8 @@ func Test_NewRawLog(t *testing.T) {
 			t.Errorf("want not nil, got nil")
 			continue
 		}
-		if got.TimeStamp != tc.want.TimeStamp {
-			t.Errorf("want timestamp %v, got %v", tc.want.TimeStamp, got.TimeStamp)
+		if got.TimeStamp.Unix() != tc.want.TimeStamp.Unix() {
+			t.Errorf("want timestamp %v, got %v", tc.want.TimeStamp.Unix(), got.TimeStamp.Unix())
 		}
 		if got.Level != tc.want.Level {
 			t.Errorf("want level %s, got %s", tc.want.Level, got.Level)

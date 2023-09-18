@@ -13,7 +13,7 @@ import (
 	"github.com/ms-henglu/pal/trace"
 )
 
-const version = "0.3.0"
+const version = "0.4.0"
 
 var showHelp = flag.Bool("help", false, "Show help")
 var showVersion = flag.Bool("version", false, "Show version")

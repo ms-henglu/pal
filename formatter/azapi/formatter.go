@@ -44,10 +44,9 @@ func (formatter *AzapiFormatter) Format(r types.RequestTrace) string {
 		// ignore the request to other hosts
 		return ""
 	}
-	for _, v := range ignoreKeywords() {
-		if strings.Contains(r.Url, v) {
-			return ""
-		}
+
+	if shouldIgnore(r.Url) {
+		return ""
 	}
 
 	resourceId := GetId(r.Url)
@@ -149,6 +148,19 @@ func (formatter *AzapiFormatter) Format(r types.RequestTrace) string {
 	formatter.populateReference(prefix, def.Output)
 
 	return def.String()
+}
+
+func shouldIgnore(url string) bool {
+	resourceType := GetResourceType(url)
+	if strings.EqualFold(resourceType, "Microsoft.ApiManagement/service/apis/operations") || strings.EqualFold(resourceType, "Microsoft.ApiManagement/service/apis/operations/tags") {
+		return false
+	}
+	for _, v := range ignoreKeywords() {
+		if strings.Contains(url, v) {
+			return true
+		}
+	}
+	return false
 }
 
 func (formatter *AzapiFormatter) formatAsAzapiResource(def AzapiDefinition) AzapiDefinition {

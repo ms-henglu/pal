@@ -17,6 +17,14 @@ var statusCodeRegex = regexp.MustCompile(`HTTP/\d.\d\s(\d{3})\s.+`)
 type AzureADProvider struct {
 }
 
+func (a AzureADProvider) IsTrafficTrace(l rawlog.RawLog) bool {
+	return false
+}
+
+func (a AzureADProvider) ParseTraffic(l rawlog.RawLog) (*types.RequestTrace, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
 func (a AzureADProvider) IsRequestTrace(l rawlog.RawLog) bool {
 	return l.Level == "INFO" && strings.Contains(l.Message, "============================ Begin AzureAD Request")
 }
