@@ -73,7 +73,11 @@ func main() {
 	switch mode {
 	case "oav":
 		format := formatter.OavTrafficFormatter{}
-		index := 0
+		files, err := os.ReadDir(output)
+		if err != nil {
+			log.Fatalf("[ERROR] failed to read output directory: %v", err)
+		}
+		index := len(files)
 		for _, t := range traces {
 			out := format.Format(t)
 			index = index + 1
