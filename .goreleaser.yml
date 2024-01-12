@@ -16,21 +16,21 @@ builds:
     ldflags:
       - '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}'
     goos:
-      - freebsd
       - windows
       - linux
       - darwin
     goarch:
-      - amd64
       - '386'
-      - arm
+      - amd64
       - arm64
     ignore:
       - goos: darwin
         goarch: '386'
+      - goos: windows
+        goarch: '386'
     binary: '{{ .ProjectName }}'
 archives:
-  - format: zip
+  - format: tar.gz
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
 checksum:
   name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
@@ -48,7 +48,6 @@ signs:
       - "--detach-sign"
       - "${artifact}"
 release:
-  # If you want to manually examine the release before its live, uncomment this line:
-  draft: true
+  draft: false
 changelog:
-  skip: true
+  skip: false
