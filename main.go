@@ -20,10 +20,12 @@ var showVersion = flag.Bool("version", false, "Show version")
 
 func main() {
 	input := ""
+	jsonInput := false
 	output := ""
 	mode := ""
 
-	flag.StringVar(&input, "i", "", "Input terraform log file")
+	flag.StringVar(&input, "i", "", "Input terraform text log file")
+	flag.BoolVar(&jsonInput, "j", false, "Input terraform file is json")
 	flag.StringVar(&output, "o", "", "Output directory")
 	flag.StringVar(&mode, "m", "markdown", "Output format, allowed values are `markdown`, `oav` and `azapi`")
 
@@ -34,6 +36,7 @@ func main() {
 			mode = "markdown"
 		}
 	}
+
 	if input == "" {
 		flag.Parse()
 		if *showHelp {
@@ -45,9 +48,10 @@ func main() {
 			os.Exit(0)
 		}
 	}
+
 	if input == "" {
 		flag.Usage()
-		log.Fatalf("[ERROR] input file is required")
+		log.Fatalf("[ERROR] input text or json file is required")
 	}
 
 	if output == "" {
@@ -58,14 +62,19 @@ func main() {
 	log.Printf("[INFO] output directory: %s", output)
 	log.Printf("[INFO] output format: %s", mode)
 
-	traces, err := trace.RequestTracesFromFile(input)
+	// switch between different file parser implementations.
+	traceFormat := trace.TextParser
+	if jsonInput {
+		traceFormat = trace.JsonParser
+	}
+
+	traces, err := trace.NewRequestTraceParser(traceFormat).ParseFromFile(input)
 	if err != nil {
 		log.Fatalf("[ERROR] failed to parse request traces: %v", err)
 	}
 
 	for _, t := range traces {
-		out := trace.VerifyRequestTrace(t)
-		if len(out) > 0 {
+		if out := trace.VerifyRequestTrace(t); len(out) > 0 {
 			log.Printf("[WARN] verification failed: url %s\n%s", t.Url, strings.Join(out, "\n"))
 		}
 	}
