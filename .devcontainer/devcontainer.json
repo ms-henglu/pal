@@ -1,0 +1,15 @@
+{
+	"dockerFile": "Dockerfile",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"golang.go",
+				"ms-azuretools.vscode-docker",
+				"ms-vscode.makefile-tools"
+			],
+			"settings": {
+				"go.useLanguageServer": true
+			}
+		}
+	}
+}
