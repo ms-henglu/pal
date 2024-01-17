@@ -13,12 +13,14 @@ import (
 
 func requestTracesFromJsonFile(input string) ([]types.RequestTrace, error) {
 	fileData, err := os.Open(input)
-	defer fileData.Close()
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to read input file: %v", err)
 	}
+
+	defer fileData.Close()
+
 	scanner := bufio.NewScanner(fileData)
+
 	var jsonLine map[string]interface{}
 
 	traces := make([]types.RequestTrace, 0)
