@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 
@@ -19,16 +20,26 @@ func requestTracesFromJsonFile(input string) ([]types.RequestTrace, error) {
 
 	defer fileData.Close()
 
-	scanner := bufio.NewScanner(fileData)
+	reader := bufio.NewReader(fileData)
 
 	var jsonLine map[string]interface{}
 
 	traces := make([]types.RequestTrace, 0)
 
 	traceLines, requestCount, responseCount := 0, 0, 0
-	for scanner.Scan() {
-		if err := json.Unmarshal(scanner.Bytes(), &jsonLine); err != nil {
-			return nil, fmt.Errorf("could not unmarhal text into json %v", err)
+
+	for {
+		lineData, err := read(reader)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+
+			return nil, fmt.Errorf("could not read line %v", err)
+		}
+
+		if err := json.Unmarshal(lineData, &jsonLine); err != nil {
+			return nil, fmt.Errorf("could not unmarhal text into json %v - json data %s", err, string(lineData))
 		}
 
 		l, err := rawlog.NewRawLogJson(jsonLine)
@@ -55,13 +66,28 @@ func requestTracesFromJsonFile(input string) ([]types.RequestTrace, error) {
 		traceLines++
 	}
 
-	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("failed to read input file: %v", err)
-	}
-
 	log.Printf("[INFO] total traces: %d", traceLines)
 	log.Printf("[INFO] request count: %d", requestCount)
 	log.Printf("[INFO] response count: %d", responseCount)
 
 	return mergeTraces(traces), nil
+}
+
+func read(reader *bufio.Reader) ([]byte, error) {
+	lineData := make([]byte, 0)
+
+	for {
+		line, prefix, err := reader.ReadLine()
+		if err != nil {
+			return line, err
+		}
+
+		lineData = append(lineData, line...)
+
+		if !prefix {
+			break
+		}
+	}
+
+	return lineData, nil
 }
