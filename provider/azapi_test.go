@@ -73,6 +73,42 @@ func TestAzAPIProvider_ParseTraffic(t *testing.T) {
 	}{
 		{
 			name: "azapi GET request trace",
+			log:  `2023-09-15T13:40:31.447+0800 [DEBUG]  provider.terraform-provider-azapi: Live traffic: {"request":{"headers":{"Accept":"application/json","User-Agent":"HashiCorp Terraform/1.5.2 (+https://www.terraform.io) Terraform Plugin SDK/2.8.0 terraform-provider-azapi/dev pid-222c6c49-1b0a-5959-a213-6608f9eb8820","X-Ms-Correlation-Request-Id":"ea90befd-41e6-0f04-a1e5-3be4d56632cc"},"method":"GET","url":"https://management.azure.com/subscriptions/******/resourceGroups/henglu915?api-version=2023-07-01","body":""},"response":{"statusCode":200,"headers":{"Cache-Control":"no-cache","Content-Type":"application/json; charset=utf-8","Date":"Fri, 15 Sep 2023 05:40:30 GMT","Expires":"-1","Pragma":"no-cache","Strict-Transport-Security":"max-age=31536000; includeSubDomains","Vary":"Accept-Encoding","X-Content-Type-Options":"nosniff","X-Ms-Correlation-Request-Id":"ea90befd-41e6-0f04-a1e5-3be4d56632cc","X-Ms-Ratelimit-Remaining-Subscription-Reads":"11999","X-Ms-Request-Id":"04ae0566-5067-4114-816c-1dace25a7b65","X-Ms-Routing-Request-Id":"SOUTHEASTASIA:20230915T054031Z:04ae0566-5067-4114-816c-1dace25a7b65"},"body":"{\"id\":\"/subscriptions/******/resourceGroups/henglu915\",\"name\":\"henglu915\",\"type\":\"Microsoft.Resources/resourceGroups\",\"location\":\"westus\",\"properties\":{\"provisioningState\":\"Succeeded\"}}"}}`,
+			want: types.RequestTrace{
+				Provider:   "azapi",
+				Method:     "GET",
+				Host:       "management.azure.com",
+				Url:        "/subscriptions/******/resourceGroups/henglu915?api-version=2023-07-01",
+				StatusCode: 200,
+				Request: &types.HttpRequest{
+					Headers: map[string]string{
+						"Accept":                      "application/json",
+						"User-Agent":                  "HashiCorp Terraform/1.5.2 (+https://www.terraform.io) Terraform Plugin SDK/2.8.0 terraform-provider-azapi/dev pid-222c6c49-1b0a-5959-a213-6608f9eb8820",
+						"X-Ms-Correlation-Request-Id": "ea90befd-41e6-0f04-a1e5-3be4d56632cc",
+					},
+					Body: "",
+				},
+				Response: &types.HttpResponse{
+					Headers: map[string]string{
+						"Cache-Control":               "no-cache",
+						"Content-Type":                "application/json; charset=utf-8",
+						"Date":                        "Fri, 15 Sep 2023 05:40:30 GMT",
+						"Expires":                     "-1",
+						"Pragma":                      "no-cache",
+						"Strict-Transport-Security":   "max-age=31536000; includeSubDomains",
+						"Vary":                        "Accept-Encoding",
+						"X-Content-Type-Options":      "nosniff",
+						"X-Ms-Correlation-Request-Id": "ea90befd-41e6-0f04-a1e5-3be4d56632cc",
+						"X-Ms-Ratelimit-Remaining-Subscription-Reads": "11999",
+						"X-Ms-Request-Id":         "04ae0566-5067-4114-816c-1dace25a7b65",
+						"X-Ms-Routing-Request-Id": "SOUTHEASTASIA:20230915T054031Z:04ae0566-5067-4114-816c-1dace25a7b65",
+					},
+					Body: "{\"id\":\"/subscriptions/******/resourceGroups/henglu915\",\"name\":\"henglu915\",\"type\":\"Microsoft.Resources/resourceGroups\",\"location\":\"westus\",\"properties\":{\"provisioningState\":\"Succeeded\"}}",
+				},
+			},
+		},
+		{
+			name: "azapi GET request trace",
 			log:  `2023-09-15T13:40:31.447+0800 [DEBUG]  provider.terraform-provider-azapi: Live traffic: {"request":{"headers":{"Accept":"application/json","User-Agent":"HashiCorp Terraform/1.5.2 (+https://www.terraform.io) Terraform Plugin SDK/2.8.0 terraform-provider-azapi/dev pid-222c6c49-1b0a-5959-a213-6608f9eb8820","X-Ms-Correlation-Request-Id":"ea90befd-41e6-0f04-a1e5-3be4d56632cc"},"method":"GET","url":"https://management.azure.com/subscriptions/******/resourceGroups/henglu915?api-version=2023-07-01","body":""},"response":{"statusCode":200,"headers":{"Cache-Control":"no-cache","Content-Type":"application/json; charset=utf-8","Date":"Fri, 15 Sep 2023 05:40:30 GMT","Expires":"-1","Pragma":"no-cache","Strict-Transport-Security":"max-age=31536000; includeSubDomains","Vary":"Accept-Encoding","X-Content-Type-Options":"nosniff","X-Ms-Correlation-Request-Id":"ea90befd-41e6-0f04-a1e5-3be4d56632cc","X-Ms-Ratelimit-Remaining-Subscription-Reads":"11999","X-Ms-Request-Id":"04ae0566-5067-4114-816c-1dace25a7b65","X-Ms-Routing-Request-Id":"SOUTHEASTASIA:20230915T054031Z:04ae0566-5067-4114-816c-1dace25a7b65"},"body":"{\"id\":\"/subscriptions/******/resourceGroups/henglu915\",\"name\":\"henglu915\",\"type\":\"Microsoft.Resources/resourceGroups\",\"location\":\"westus\",\"properties\":{\"provisioningState\":\"Succeeded\"}}"}}: timestamp=2023-09-15T13:40:31.447+0800`,
 			want: types.RequestTrace{
 				Provider:   "azapi",
