@@ -1,3 +1,8 @@
+## v0.5.0
+ENHANCEMENTS:
+- Support parsing logs from terraform-provider-azapi v1.13.0 or above.
+
+
 ## v0.4.0
 BREAKING CHANGES:
 - Only support logs from terraform-provider-azapi v1.10.0 or above.
