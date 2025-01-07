@@ -13,19 +13,17 @@ import (
 	"github.com/ms-henglu/pal/trace"
 )
 
-const version = "0.4.0"
+const version = "0.5.0"
 
 var showHelp = flag.Bool("help", false, "Show help")
 var showVersion = flag.Bool("version", false, "Show version")
 
 func main() {
 	input := ""
-	jsonInput := false
 	output := ""
 	mode := ""
 
 	flag.StringVar(&input, "i", "", "Input terraform text log file")
-	flag.BoolVar(&jsonInput, "j", false, "Input terraform file is json")
 	flag.StringVar(&output, "o", "", "Output directory")
 	flag.StringVar(&mode, "m", "markdown", "Output format, allowed values are `markdown`, `oav` and `azapi`")
 
@@ -62,13 +60,7 @@ func main() {
 	log.Printf("[INFO] output directory: %s", output)
 	log.Printf("[INFO] output format: %s", mode)
 
-	// switch between different file parser implementations.
-	traceFormat := trace.TextParser
-	if jsonInput {
-		traceFormat = trace.JsonParser
-	}
-
-	traces, err := trace.NewRequestTraceParser(traceFormat).ParseFromFile(input)
+	traces, err := trace.NewRequestTraceParser().ParseFromFile(input)
 	if err != nil {
 		log.Fatalf("[ERROR] failed to parse request traces: %v", err)
 	}
