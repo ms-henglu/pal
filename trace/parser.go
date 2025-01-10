@@ -96,7 +96,7 @@ func (rtp *RequestTraceParser) ParseFromFile(input string) ([]types.RequestTrace
 	log.Printf("[INFO] request count: %d", requestCount)
 	log.Printf("[INFO] response count: %d", responseCount)
 
-	return traces, nil
+	return mergeTraces(traces), nil
 }
 
 func read(reader *bufio.Reader) ([]byte, error) {
