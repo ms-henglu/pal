@@ -16,7 +16,7 @@ func TestRequestTracesFromPlainTextFile(t *testing.T) {
 	inputFile := filepath.Join("..", "testdata", "input.txt")
 
 	mergedTraces, err := NewRequestTraceParser().ParseFromFile(inputFile)
-	assert.NoError(t, err, "There should no error")
+	assert.NoError(t, err, "There should be no error")
 	assert.Equal(t, 0, len(mergedTraces)) // we are skipping request that just use the url "/" and have a status code of 0
 
 	assert.Contains(t, logBuffer.String(), "total traces: 21373", "there must be 21373 traces inside the json log")
