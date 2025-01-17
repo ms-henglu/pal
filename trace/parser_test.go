@@ -17,7 +17,7 @@ func TestRequestTracesFromMixedFile(t *testing.T) {
 
 	mergedTraces, err := NewRequestTraceParser().ParseFromFile(inputFile)
 	assert.NoError(t, err, "There should be no error")
-	assert.Equal(t, 15, len(mergedTraces)) //30 from json 10 from plain
+	assert.Equal(t, 15, len(mergedTraces)) // 15 merged traces
 
 	assert.Contains(t, logBuffer.String(), "total traces: 29191", "there must be 29191 traces inside the json log")
 	assert.Contains(t, logBuffer.String(), "total plain log lines: 21373", "there must be 21373 traces in plain format inside the json log")
