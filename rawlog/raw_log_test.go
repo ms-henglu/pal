@@ -11,6 +11,7 @@ func Test_NewRawLog(t *testing.T) {
 	timestampInCase1, _ := time.Parse("2006-01-02T15:04:05.999-0700", "2019-01-01T00:00:00.000+0800")
 	timestampInCase2, _ := time.Parse("2006-01-02 15:04:05", "2019-01-01 00:00:00")
 	ntimestampInCase3, _ := time.Parse("2006/01/02 15:04:05", "2023/07/28 14:03:36")
+	timestampInCase4, _ := time.Parse("2006-01-02T15:04:05.999Z", "2026-07-30T23:48:21.174Z")
 	testcases := []struct {
 		input   string
 		wantErr bool
@@ -41,6 +42,15 @@ func Test_NewRawLog(t *testing.T) {
 				TimeStamp: ntimestampInCase3,
 				Level:     "DEBUG",
 				Message:   "AzureRM Request:",
+			},
+		},
+		{
+			input:   "2026-07-30T23:48:21.174Z [INFO]  Terraform version: 1.15.6",
+			wantErr: false,
+			want: &rawlog.RawLog{
+				TimeStamp: timestampInCase4,
+				Level:     "INFO",
+				Message:   "Terraform version: 1.15.6",
 			},
 		},
 	}
