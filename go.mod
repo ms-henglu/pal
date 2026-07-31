@@ -1,6 +1,6 @@
 module github.com/ms-henglu/pal
 
-go 1.23
+go 1.26.5
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.6.1
@@ -16,6 +16,6 @@ require (
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.3.0 // indirect
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/net v0.8.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/net v0.57.0 // indirect
+	golang.org/x/text v0.40.0 // indirect
 )

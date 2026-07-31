@@ -29,7 +29,9 @@ func (rtp *RequestTraceParser) ParseFromFile(input string) ([]types.RequestTrace
 		return nil, fmt.Errorf("failed to read input file %s: %v", input, err)
 	}
 
-	defer fileData.Close()
+	defer func() {
+		_ = fileData.Close()
+	}()
 
 	reader := bufio.NewReader(fileData)
 
