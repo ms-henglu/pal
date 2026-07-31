@@ -1,3 +1,18 @@
+## [v0.6.0](https://github.com/ms-henglu/pal/releases/tag/v0.6.0)
+BREAKING CHANGES:
+- Remove the `-j` option; input log formats are now detected automatically.
+- Remove `trace.LogFormat`, `trace.JsonParser`, and `trace.TextParser`, and change `trace.NewRequestTraceParser` to accept no arguments.
+
+FEATURES:
+- Support parsing plain-text, JSON, and mixed-format Terraform log files without specifying the log format.
+- Support UTC log timestamps ending in `Z`.
+
+ENHANCEMENTS:
+- Update the Go version to 1.26.5.
+- Update `golang.org/x/net` and `golang.org/x/text` to the latest version.
+- Ignore debug log entries that contain no request or response information.
+- Update the golangci-lint GitHub Action.
+
 ## [v0.5.0](https://github.com/ms-henglu/pal/releases/tag/v0.5.0)
 FEATURES:
 - Support parsing Terraform JSON logs with the `-j` option.
