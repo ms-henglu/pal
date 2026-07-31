@@ -15,7 +15,7 @@ import (
 type RequestTraceParser struct{}
 
 const (
-	plainTextRegex string = `([\d+.:T\-/ ]{19,28})\s\[([A-Z]+)]`
+	plainTextRegex string = `([\d+.:TZ\-/ ]{19,28})\s\[([A-Z]+)]`
 	jsonTextRegex  string = `({"@{1}).*}{1}`
 )
 
